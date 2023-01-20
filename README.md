@@ -4,6 +4,9 @@ We want to create a proxy server for the Mastodon network, such that it can add 
 
 See https://dair-community.social/@sergia/109660753217484908
 
+## How to run
+`python proxy.py --instance <your_instance_name>`
+
 ### Proposed functionality:
 - Queueing notifications https://github.com/mastodon/mastodon/issues/23015
 - Delaying notifications https://github.com/mastodon/mastodon/issues/23015
@@ -12,6 +15,6 @@ See https://dair-community.social/@sergia/109660753217484908
 - Direct Sharing https://dair-community.social/@sergia/109513867125571339
 
 ### Plan
-1. Check if a Python proxy server can work for Mastodon, as a web interface and on the phone app
-2. Check if basic data can be changed
+1. Check if a Python proxy server can work for Mastodon, as a web interface and on the phone app... Works with the web interface!
+2. Check if basic data can be changed... Yes
 3. Implement queued/delayed notifications
