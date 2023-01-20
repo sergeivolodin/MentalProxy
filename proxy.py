@@ -1,6 +1,6 @@
 from http.server import ThreadingHTTPServer
 from argparse import ArgumentParser
-from rate_limiter import RateLimiterAlwaysNo, RateLimiterAlwaysYes, RateLimiterPostsPerMinute
+from rate_limiter import RateLimiterPostsNotifications, RateLimiterAlwaysNo, RateLimiterAlwaysYes, RateLimiterPostsPerMinute
 from mastodon_ethical_proxy import BaseMastodonEthicalProxy
 
 # argument parser
@@ -14,7 +14,7 @@ destination_schema = 'https'
 def run(listen_port, destination_host):
     """Run the server."""
     server_address = ('', listen_port)
-    ratelimiter = RateLimiterAlwaysNo()
+    ratelimiter = RateLimiterPostsNotifications()
     handler_class = BaseMastodonEthicalProxy\
         .point_to(destination_schema, destination_host)\
         .with_limit(ratelimiter)
