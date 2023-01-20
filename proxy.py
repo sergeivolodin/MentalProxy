@@ -8,13 +8,36 @@ destination_host = 'dair-community.social'
 listen_port = 8083
 
 class RateLimiter():
-    def notifications_request_ok():
-        return False
-        pass
+    """Limit the rate of messages and notifications."""
     
-    def timeline_request_ok():
+    # todo: make it per-account rather than global
+    
+    def notifications_request_ok(self):
+        raise NotImplementedError
+    
+    def timeline_request_ok(self):
+        raise NotImplementedError
+    
+    
+class RateLimiterAlwaysYes(RateLimiter):
+    def notifications_request_ok(self):
+        return True
+    
+    def timeline_request_ok(self):
+        return True
+
+
+class RateLimiterAlwaysNo(RateLimiter):
+    def notifications_request_ok(self):
         return False
-        pass
+    
+    def timeline_request_ok(self):
+        return False
+    
+
+class RateLimiterPostsPerMinute(RateLimiter):
+    def timeline_request_ok(self):
+        return False
 
 class BaseMastodonEthicalProxy(BaseReverseProxyHandler):
     """Ethical proxy."""
@@ -36,14 +59,25 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler):
         
         return MastodonEthicalProxy
     
+    def send_empty_json(self):
+        """Send an empty json response."""
+        self.send_header('content-type', 'application/json')
+        self.send_header('content-length', 2)
+        self.wfile.write(b'[]')
+    
     def filter_incoming_request(self):
-        print(self.path)
-        
         if 'api/v1/notifications' in self.path and not self.rate_limiter.notifications_request_ok():
-            self.send_error(403)
+            self.send_error(403, "Notifications muted for mental wellbeing")
+            return True
             
         if '/api/v1/timelines/' in self.path and not self.rate_limiter.timeline_request_ok():
-            self.send_error(403)
+            
+            # send a 403 with a message
+            # self.send_error(403, "Timeline paused for mental wellbeing")
+            
+            # send an empty json (no error, shows as empty)
+            self.send_empty_json()
+            return True
     
     def disable_websockets(self, response):
         """Disable websockets to have no push notifications (only pull)."""
@@ -60,7 +94,7 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler):
 def run():
     """Run the server."""
     server_address = ('', listen_port)
-    ratelimiter = RateLimiter()
+    ratelimiter = RateLimiterAlwaysNo()
     handler_class = BaseMastodonEthicalProxy\
         .point_to(destination_schema, destination_host)\
         .with_limit(ratelimiter)

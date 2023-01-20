@@ -99,7 +99,8 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
         
     def process_no_data(self):
         """Process a request assuming there was no data sent."""
-        self.filter_incoming_request()
+        if self.filter_incoming_request():
+            return
         response = requests.request(
             method=self.command,
             url=self.destination_url,
