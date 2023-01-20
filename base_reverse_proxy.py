@@ -6,7 +6,7 @@ import re
 class BaseReverseProxyHandler(BaseHTTPRequestHandler):
     """Reverse Proxy Server class."""
     
-    def factory(destination_schema, destination_host):
+    def point_to(destination_schema, destination_host):
         """Create a class that has a specific host/port."""
         
         class ReverseProxyHandler(BaseReverseProxyHandler):
