@@ -6,10 +6,11 @@ import re
 class BaseReverseProxyHandler(BaseHTTPRequestHandler):
     """Reverse Proxy Server class."""
     
-    def point_to(destination_schema, destination_host):
+    @classmethod
+    def point_to(cls, destination_schema, destination_host):
         """Create a class that has a specific host/port."""
         
-        class ReverseProxyHandler(BaseReverseProxyHandler):
+        class ReverseProxyHandler(cls):
             def get_destination_schema(self):
                 return destination_schema
             def get_destination_host(self):
@@ -89,19 +90,47 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
                 return y
         return None
         
-    def do_GET(self):
+    def process_no_data(self):
+        """Process a request assuming there was no data sent."""
         self.filter_incoming_request()
-        response = requests.get(
-            self.get_destination_url(),
+        response = requests.request(
+            method=self.command,
+            url=self.get_destination_url(),
             headers=self.get_proxy_headers()
         )
         self.send_proxied_response(response)
     
-    def do_POST(self):
+    def process_with_data(self):
+        """Process a request assuming there was data"""
         post_length = int(self.get_header('content-length'))
-        response = requests.post(
-            self.get_destination_url(),
+        response = requests.request(
+            method=self.command,
+            url=self.get_destination_url(),
             headers=self.get_proxy_headers(),
             data=self.rfile.read(post_length)
         )
         self.send_proxied_response(response)
+        
+    def process(self):
+        if self.get_header('content-length'):
+            self.process_with_data()
+        else:
+            self.process_no_data()
+            
+    def do_GET(self):
+        self.process()
+        
+    def do_DELETE(self):
+        self.process()
+        
+    def do_POST(self):
+        self.process()
+        
+    def do_PATCH(self):
+        self.process()
+        
+    def do_HEAD(self):
+        self.process()
+        
+    def do_PUT(self):
+        self.process()
