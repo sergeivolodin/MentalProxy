@@ -61,6 +61,9 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
             if item in response_headers:
                 del response_headers[item]
         response_headers['content-length'] = len(response.content)
+        if 'set-cookie' in response_headers:
+            if response_headers['set-cookie'].endswith('; secure'):
+                response_headers['set-cookie'] = response_headers['set-cookie'][:-8]
         for x, y in response_headers.items():
             self.send_header(x, y)
         self.end_headers()
