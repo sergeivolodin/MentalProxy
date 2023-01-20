@@ -11,36 +11,43 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
         """Create a class that has a specific host/port."""
         
         class ReverseProxyHandler(cls):
-            def get_destination_schema(self):
+            @property
+            def destination_schema(self):
                 return destination_schema
-            def get_destination_host(self):
+            
+            @property
+            def destination_host(self):
                 return destination_host
 
         return ReverseProxyHandler
     
-    def get_destination_schema(self):
+    @property
+    def destination_schema(self):
         """Destination schema (to be overloaded)."""
         raise NotImplementedError
     
-    def get_destination_host(self):
+    @property
+    def destination_host(self):
         """Destination host (to be overloaded)."""
         raise NotImplementedError
     
     def get_proxy_headers(self):
         """Get the headers to be sent to the destination."""
         headers = {x.lower(): y for x, y in self.headers.items()}
-        headers['host'] = self.get_destination_host()
-        headers['origin'] = self.get_destination_base_url()
-        headers['referer'] = self.get_destination_base_url()
+        headers['host'] = self.destination_host
+        headers['origin'] = self.destination_base_url
+        headers['referer'] = self.destination_base_url
         return headers
     
-    def get_destination_base_url(self):
+    @property
+    def destination_base_url(self):
         """Get the base URL for the destination."""
-        return self.get_destination_schema() + '://' + self.get_destination_host()
+        return self.destination_schema + '://' + self.destination_host
     
-    def get_destination_url(self):
+    @property
+    def destination_url(self):
         """Get destination URL based on request URL."""
-        return self.get_destination_base_url() + self.path
+        return self.destination_base_url + self.path
     
     def send_response(self, code, message=None):
         """Overloading send_response to not send our server&date."""
@@ -95,7 +102,7 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
         self.filter_incoming_request()
         response = requests.request(
             method=self.command,
-            url=self.get_destination_url(),
+            url=self.destination_url,
             headers=self.get_proxy_headers()
         )
         self.send_proxied_response(response)
@@ -105,7 +112,7 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
         post_length = int(self.get_header('content-length'))
         response = requests.request(
             method=self.command,
-            url=self.get_destination_url(),
+            url=self.destination_url,
             headers=self.get_proxy_headers(),
             data=self.rfile.read(post_length)
         )
