@@ -1,5 +1,5 @@
-from base_reverse_proxy import BaseReverseProxyHandler
-from http_tools import HTTPTools
+from .base_reverse_proxy import BaseReverseProxyHandler
+from .http_tools import HTTPTools
 
 
 class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
