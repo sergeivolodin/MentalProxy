@@ -1,0 +1,218 @@
+1. Add a popup on the page with the settings, some settings take effect with a delay
+2. Make the instance a query parameter. Propose to add it to bookmarks. Without the query, get instances/websites from the cookies
+3. Use per-variable RateLimiter, and make it per-session
+4. Create a class with a method .configure that sets the variables and returns the new class instance, use it for rate limiter, and the proxy itself
+5. Add rate limits to person's individual timelines
+6. Add Twitter support
+7. Disable auto load when scrolling down on Mastodon, Twitter, etc, add a button on Twitter
+8. Show how many posts were loaded during the last hour 
+9. Add custom timeline ranking: popularity, emotion, how long are the discussions, how many people participated, how long is the post, how popular is the account (load 1000 on the backend). Those are seen as "custom timelines" at the top in the selector
+10. Add an overview of the timeline: word cloud, click leads to posts
+11. Add consent preferences: multiple timeline filter presets. Either classic AI (word filters -> score) or LLM.
+12. Add swipe left/right on a post -> see less/more -> timeline reloads with new preferences. "Setting up the timeline"
+13. Add Direct Sharing: a special private toot that shows up in notifications (but not broadcasted), will show up as "recommended by". "If you don't like this recommendation, toot '' in response or use the website with consent preferences." "@xyz invites you into a conversation about ..., asks ..."
+14. Add Direct Sharing origin to consent preferences. Left/right when hovering over the recommender -> recommender has less consent towards
+15. Add "feedback for recommenders" button -> the whole chain is notified (or notified with less consent)
+16. Add lists as different timelines at the top as options
+17. Allow to see timelines of other people (consent?)
+18. Allow to see server timeline (consent?)
+19. Run inside an OSS hosting service, ideally one that provides hash of the running code (trust)
+
+
+Search known people by bio and last toots, suggest in "recommend to"
+Show a colourful map of emotions next to toot, so I know what's inside
+Show how polite are the responses before clicking
+Limit reply througput when viewing as well
+Show a dummy toot instead of a 403 or something else
+Add a short bio when recommending, and why I'm recommending it
+Ignore recommendation -> consent preferences lowered?
+Favourite recommendation -> preferences higher? For non-website people
+Can we somehow not have credentials passing through the proxy?
+When the timeout for settings change ends, ask to confirm if the person still wants it
+A flag "allow myself to be discoverable for recommendations or requests"
+"recommendation requests" feature: toot that has "recommend me" in it, looking for responses
+Allow plugins
+Maybe it just should be a browser extension? No, mobile doesn't have it... Omg
+Why am I working on the weekend again? Cure will not be good
+Mental proxy, healthy proxy, social proxy, calm proxy, custom proxy,
+Healthy social
+My social health
+Your social health
+Our social health
+Use nginx to cache statics, make sure they're not requested every time
+Use https with letsencrypt
+Fix asset integrity
+Use gzip compression
+Use keep-alive connections
+Add a link to my profile and GH issues "something failed", "feature requests", proposals, collaboration, ethics all of it
+Can the proxy override only some parts, but not others? Like, login stays but there's code injected or smth
+How can we have "safe code injection"?
+Add a "rate my experience" button
+
+Maybe better with Django? https://stackoverflow.com/questions/5226173/django-as-reverse-proxy
+Can be used for a simpler database interaction
+https://djangopackages.org/grids/g/reverse-proxy/
+What to do with "show new" -- just rank separately again?
+Just rewrite Hosts file? can it be done on Android
+VPN service? How to account for the certificate?
+Do a redirect?
+Add colours for the website
+Add "groups" on Twitter and Mastodon. Few people talk semi-publicly (only group visibility, not broadcasted by-default).
+Sending messages from Twitter to Facebook?
+
+Random walk on the graph of following/followers. Searching for posts, etc
+"Interested in" posts (what content one wants to see) -- how to make it algorithmic? should it be?
+"Relay message" functionality -- I don't know, but I relay it to someone who might know more
+Ability to add notes from recommenders who relay
+Flat list of relayers, instead of a nested "retoot"
+
+Recommendations are only sent if they're consensual: publicly discoverable?
+
+If the first few recommendations didn't work, pause them for a person and ask?
+
+Group posts by person, show scrollable thingy with posts inside
+
+Remove likes/favourites/counts altogether
+On Desktop, show buttons "+" and "-" to give consent preferences/feedback
+
+Need to support Mobile, and can't update ALL the apps (some are not update-able like Twitter)
+ - A new app -- too much work
+ - Web app
+ - Have to proxy the data
+ - Whatever method we use, the proxy needs to be able to request the timeline as the person. And we can't use Official API for Twitter
+ - So the proxy has to process the login data...
+Use Tailscale and run the program locally? pagekite or tailscale (udp hole punching fails in some nets?)
+
+Log time I spend on tweets, then show a review of the week
+Show a review of my responses
+
+Give a Heroku token to be able to verify that the code running is indeed what advertised
+https://devcenter.heroku.com/articles/oauth
+better open-source alternatives to Heroku with the same functionality
+shell access must be logged, logs must reflect all actions made
+
+option to collect stats (when new posts are being loaded, add +1 minute)
+every setting is separate and configurable both in the initial screen and in the pop-up settings icon
+add demo gifs to each feature on the first page
+replace links to unchanged resources to their originals to save compute time
+- changing unminimized js code -- too much, wouldn't work for twitter, and would need to be updated. easier to add/remove functionality somehow. how to remove timers/OnScrollDown events for the timeline?
+- add "posts similar to this one" from the saved/bookmarked/favourited/last 1000 in the timeline
+- add collections by-topic, rather than everything at once
+- "favourite later" -- queue and send the favourite request later to not overwhelm the person?
+model of spreading: if it's good, people will share it with others
+ " if you like it, share it with people you know in the way you like " -- no buttons
+page with credits of everyone who contributed
+ability to change font in the timeline/colours/make it black-and-white
+ability to add python/js plugins. how to account for long runtime/crypto miners/code that hijacks the server? -- maybe only allow certain methods, and limiting the runtime of a plugin. for JS it should be easier. plugin review?
+
+Decentralized Web Customization Proxy
+
+Use https://mitmproxy.org/ ?
+
+Web Middleware
+Online Middleware
+
+
+Website + Settings + Backend plugins + Frontend plugins
+do not pass additional GET parameters to the server
+
+Add Integrity Check Information on the website itself (i.e. a heroku etc command with a read-only API key that shows how this container happened to be)
+- check that the git commit is correct
+- check that the ip address or a domain name is correct
+- link to the git commit for people to be able to see what's up
+- "please check for unusual commands like launch of a terminal"
+- please inform the engineers if the process has flaws
+- please inform the people if the container seems to be compromised, or the code is not secure
+- "Link to This Server"
+- CPU/MEM/num of people show, show instructions on how to run it yourself if there are too many requests
+
+
+Show toots/tweets from search in a separate timeline. "Search timeline".
+Mixing timelines
+
+
+When timeline is paused, suggest "other timelines", "search for something" etc, if instructed to say so
+
+Sharing plugins between people
+
+Add links to middleware, describe the story
+
+gin config files for ssl/no ssl/etc -- or maybe can configure in the settings as well?
+one object handles all the proxy things, so the program doesn't need to be restarted when settings update.
+add rate limits for incoming requests
+disallow loading big files
+disallow non-mastodon instances (try a HEAD, store it)
+What about GDPR? Needs to be some sort of a "release" form, because the private data is being passed and seen in cleartext...
+
+How to add limits to apps as well? Probably API requests are fine too
+What if Twitter changes their API endpoints to shitty ones? Maybe we can look at the content...
+tabs by emotion angry sad etc
+if asked, the proxy stores messages for quick search
+add twitter topic to the list of timelines at the top
+
+A VPN that redirects requests to social media sites into the proxy -- a hosts file will fail the ssl check
+Use a custom DNS server!
+no, dns will not work wil ssl...
+Maybe DNS Redirect? https://www.domainscanada.ca/clients/knowledgebase/52/How-to-Redirect-a-Domain-Using-DNS-Records-URL-Redirect.html
+
+
+can't change the twitter app then? because twitter.com does ssl checks?
+
+patch the app? ugly
+Install a certificate! https:// -> new IP and the certificate will work it out!
+
+dair-community_social.twitter_com.95_179_214_45.dnsserver.xxx -> redirecting to xxxx for social media websites?
+
+how to redirect to a specific proxy instance with dns?
+ip address -- fixed only, need a private vds for this
+
+app is unlikely to pass app store review...
+
+if we do vpn, it will have to be device-specific...
+but dns+certificates is fine.
+it's sooo cold
+and i'm scared to shower
+
+how would the proxy remember the settings for the app?
+maybe we use a custom subdomain, and use a password to change the settings
+without the password, the proxy works but the settings cannot be changed.
+- separate settings for each device/user agent
+
+
+Iphone
+3g no proxy? dns -- "DNS profile"?
+wifi -- proxy, dns
+
+Android
+3g -- some proxy, dns -- no
+wifi -- both
+
+proxy
+android only supports 1 vpn, so maybe not a vpn...
+
+DNS resolves twitter.com to some VDS IP
+DNS runs in a controlled environment (git logs etc)
+other websites are resoloved normally
+VDS IP responds with SSL redirect to a proper proxy website (moved permanently)
+ - would it work with the Twitter app? Facebook? Mastodon?
+ - SSL works because a custom certificate is installed (works on non-rooted Android and iPhone)
+proxy website works
+
+meta-extension: all extensions on Firefox with this website
+
+iPhone system dns https://github.com/paulmillr/encrypted-dns
+Private DNS on android - over TLS https://developers.google.com/speed/public-dns/docs/using
+Maybe for a given proxy server, we can give a specific DNS host ABC.proxy.org
+The DNS verifies that the commits come from a master branch?
+Android supports PAC files https://stackoverflow.com/questions/29691220/how-to-set-proxy-auto-config-pac-file-in-sdcard-of-android
+iPhone https://gist.github.com/jmbeach/7923611ff79d81e27ef3aa9a4880f11e
+PAC file points towards a special https proxy that runs the person-specific configuration
+Then going to twitter.com leads to the correct IP!
+No DNS needed!
+No PAC on mobile?
+Droni
+Requires a VPN
+Python https proxy https://github.com/inaz2/proxy2/blob/master/proxy2.py
+On drony can select No when opening a Vpn
+
+Rewrite everything to JS so it's easily repackageable as a browser extension or a side-load script
