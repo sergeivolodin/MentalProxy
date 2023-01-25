@@ -19,4 +19,4 @@ def run(listen_port):
 if __name__ == '__main__':
     args = parser.parse_args()
     print(f"Now open http://127.0.0.1:{args.listen_port} to access Twitter with mental wellbeing features")
-    run(int(args.listen_port), args.instance)
+    run(int(args.listen_port))

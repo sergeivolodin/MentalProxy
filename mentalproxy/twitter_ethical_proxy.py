@@ -11,11 +11,11 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
     
     @property
     def destination_schema(self):
-        raise 'https'
+        return 'https'
     
     @property
     def destination_host(self):
-        raise 'mobile.twitter.com'
+        return 'mobile.twitter.com'
     
     @classmethod
     def with_limit(cls, rlim):

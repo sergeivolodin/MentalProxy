@@ -54,16 +54,28 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
         self.log_request(code)
         self.send_response_only(code, message)
     
-    def send_proxied_headers(self, response):
-        """Post-process and relay the headers from the destination."""
-        response_headers = {x.lower(): y for x, y in response.headers.items()}
-        for item in ['content-encoding', 'transfer-encoding', 'connection', 'vary', 'content-security-policy']:
-            if item in response_headers:
-                del response_headers[item]
-        response_headers['content-length'] = len(response.content)
+    @property
+    def delete_response_headers(self):
+        return ['content-encoding', 'transfer-encoding', 'connection', 'vary', 'content-security-policy']
+    
+    def remove_cookie_security(self, response_headers):
+        """Remove the secure parameter from set-cookie headers."""
         if 'set-cookie' in response_headers:
             if response_headers['set-cookie'].endswith('; secure'):
                 response_headers['set-cookie'] = response_headers['set-cookie'][:-8]
+    
+    def send_proxied_headers(self, response):
+        """Post-process and relay the headers from the destination."""
+        response_headers = {x.lower(): y for x, y in response.headers.items()}
+        
+        for item in self.delete_response_headers:
+            if item in response_headers:
+                del response_headers[item]
+                
+        response_headers['content-length'] = len(response.content)
+        
+        self.remove_cookie_security(response_headers)
+        
         for x, y in response_headers.items():
             self.send_header(x, y)
         self.end_headers()
