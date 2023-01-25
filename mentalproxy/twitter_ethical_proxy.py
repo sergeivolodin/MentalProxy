@@ -17,6 +17,20 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
     def destination_host(self):
         return 'mobile.twitter.com'
     
+    @property
+    def delete_response_headers(self):
+        p = super().delete_response_headers
+        p.append('cross-origin-opener-policy')
+        p.append('cross-origin-embedder-policy')
+        return p
+    
+    def remove_cookie_security(self, response_headers):
+        """Remove the secure parameter from set-cookie headers."""
+        subs = 'Domain=.twitter.com; Secure; SameSite=None'
+        if 'set-cookie' in response_headers:
+            if response_headers['set-cookie'].endswith(subs):
+                response_headers['set-cookie'] = response_headers['set-cookie'][:-len(subs)]
+    
     @classmethod
     def with_limit(cls, rlim):
         """Add a rate limiter for all threads."""

@@ -157,3 +157,6 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
         
     def do_PUT(self):
         self.process()
+
+    def do_OPTIONS(self):
+        self.process()
