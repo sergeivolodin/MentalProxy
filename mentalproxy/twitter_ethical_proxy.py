@@ -1,5 +1,5 @@
-from .base_reverse_proxy import BaseReverseProxyHandler
-from .http_tools import HTTPTools
+from mentalproxy.base_reverse_proxy import BaseReverseProxyHandler
+from mentalproxy.http_tools import HTTPTools
 
 
 class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
