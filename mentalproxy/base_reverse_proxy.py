@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import requests
 import re
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 from urllib.parse import parse_qs
 
 
@@ -82,6 +82,15 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
             target_url = query_params['__proxy_url'][0]
             return target_url
         
+        if '__proxy_prefix' in self.path:
+            url1 = self.path.split('/')
+            prefix = unquote(url1[1][len('__proxy_prefix_'):])
+            postfix = '/'.join(url1[2:])
+            # print('path', self.path)
+            # print('base', self.destination_base_url)
+            # print(url1, 'p', prefix, 'p', postfix)
+            return prefix + '/' + postfix
+        
         # print(query_params)
         
         return url
@@ -159,7 +168,7 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
             headers=self.get_proxy_headers()
         )
         
-        print(response.status_code, self.command, self.destination_url, self.get_proxy_headers())
+        # print(response.status_code, self.command, self.destination_url, self.get_proxy_headers())
         
         self.send_proxied_response(response)
     

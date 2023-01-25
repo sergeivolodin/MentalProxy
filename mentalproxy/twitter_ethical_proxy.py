@@ -64,7 +64,7 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         #     return True
     
     def loadJSLocally(self, response):
-        mime = response.headers.get('content-type')
+        mime = response.headers.get('content-type', '')
         
         def proxy_url(match_obj):
             if match_obj.group() is not None:
@@ -76,6 +76,13 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
             # replacing paths to .js files
             expr = re.compile(b'http[s]://[^"]+\.js')
             response._content = re.sub(expr, proxy_url, response.content)
+            
+    def proxyAPIRequests(self, response):
+        mime = response.headers.get('content-type', '')
+        
+        if 'text/html' in mime or 'application/javascript' in mime:
+            # response._content = response.content.replace(b'api.twitter.com', b'127.0.0.1:8080')
+            response._content = response.content.replace(b'https://api.twitter.com', b'http://127.0.0.1:8080/__proxy_prefix_https%3A%2F%2Fapi.twitter.com')
     
     def process_response(self, response):
         """Process the response from the destination."""
@@ -83,3 +90,4 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         self.disable_websockets(response)
         self.loadJSLocally(response)
         self.ignore_integrity(response, name='nonce')
+        self.proxyAPIRequests(response)
