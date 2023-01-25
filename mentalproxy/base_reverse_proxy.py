@@ -1,6 +1,8 @@
 from http.server import BaseHTTPRequestHandler
 import requests
 import re
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 
 
 class BaseReverseProxyHandler(BaseHTTPRequestHandler):
@@ -31,10 +33,33 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
         """Destination host (to be overloaded)."""
         raise NotImplementedError
     
+    # def override_dst_host(self, newHost):
+    #     self.newDstHost = newHost
+        
+    # def get_dst_host(self):
+    #     if hasattr(self, 'newDstHost') and self.newDstHost:
+    #         return self.newDstHost
+    #     return self.destination_host
+        
+    # def reset_dst_host(self):
+    #     self.newDstHost = None
+    
+    @property
+    def destination_host_from_url(self):
+        url = self.destination_url
+        url = urlparse(url)
+        
+        # print(self.destination_url)
+        
+        if url.hostname is None:
+            return self.destination_host
+        else:
+            return url.hostname
+    
     def get_proxy_headers(self):
         """Get the headers to be sent to the destination."""
         headers = {x.lower(): y for x, y in self.headers.items()}
-        headers['host'] = self.destination_host
+        headers['host'] = self.destination_host_from_url
         headers['origin'] = self.destination_base_url
         headers['referer'] = self.destination_base_url
         return headers
@@ -47,7 +72,19 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
     @property
     def destination_url(self):
         """Get destination URL based on request URL."""
-        return self.destination_base_url + self.path
+        url = self.destination_base_url + self.path        
+        parsed_url = urlparse(url)
+        query_params = parse_qs(parsed_url.query)
+        
+        if '__proxy_url' in query_params:
+            # print('host override', parsed_url.hostname)
+            # self.override_dst_host(parsed_url.hostname)
+            target_url = query_params['__proxy_url'][0]
+            return target_url
+        
+        # print(query_params)
+        
+        return url
     
     def send_response(self, code, message=None):
         """Overloading send_response to not send our server&date."""
@@ -80,11 +117,11 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
             self.send_header(x, y)
         self.end_headers()
         
-    def ignore_integrity(self, response):
+    def ignore_integrity(self, response, name='integrity'):
         """Remove the integrity checks for assets."""
         if 'text/html' not in response.headers.get('content-type', ''):
             return
-        regexp = re.compile(b'integrity="[^"]+"')
+        regexp = re.compile(name.encode('utf-8') + b'="[^"]+"')
         response._content = re.sub(regexp, b"", response.content)
         
     def process_response(self, response):
@@ -121,6 +158,9 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
             url=self.destination_url,
             headers=self.get_proxy_headers()
         )
+        
+        print(response.status_code, self.command, self.destination_url, self.get_proxy_headers())
+        
         self.send_proxied_response(response)
     
     def process_with_data(self):

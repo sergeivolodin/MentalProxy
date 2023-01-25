@@ -27,7 +27,7 @@ See https://dair-community.social/@sergia/109660753217484908
 At the core, there's a conviction that a customer should be able to have control over the service they receive. Since the social media companies do not provide that, do not want to and will not do it, we do not ask them and do our own.
 
 Proxy is an elegant solution that can support both open-source and commercial social media, and theoretically all of the clients.
-For the Apps, we propose the following scheme: PAC file to route API requests for social media through the proxy. It is unclear yet if apps do certificate pinning. If they do, it's likely this would not work.
+For the Apps, we propose the following scheme: PAC file to route API requests for social media through the proxy. It is unclear yet if apps do certificate pinning. If they do, it's likely this would not work. A custom certificate would be required.
 
 To account for trust/security with regard to the proxy, we propose to a) run self-hosted instances and b) deploy code from the master branch to a known service like Heroku, expose a read-only API key to be able to inspect how the container was created (TBD).
 

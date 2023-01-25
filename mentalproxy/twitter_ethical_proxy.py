@@ -1,5 +1,7 @@
 from mentalproxy.base_reverse_proxy import BaseReverseProxyHandler
 from mentalproxy.http_tools import HTTPTools
+import re
+from urllib.parse import quote
 
 
 class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
@@ -61,7 +63,23 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         #     # self.send_empty_json()
         #     return True
     
+    def loadJSLocally(self, response):
+        mime = response.headers.get('content-type')
+        
+        def proxy_url(match_obj):
+            if match_obj.group() is not None:
+                data = match_obj.group().lower()
+                data = b'/?__proxy_url=' + quote(data.decode('utf-8'), safe='').encode('utf-8')
+                return data
+        
+        if 'text/html' in mime:
+            # replacing paths to .js files
+            expr = re.compile(b'http[s]://[^"]+\.js')
+            response._content = re.sub(expr, proxy_url, response.content)
+    
     def process_response(self, response):
         """Process the response from the destination."""
         super(BaseTwitterEthicalProxy, self).process_response(response)
         self.disable_websockets(response)
+        self.loadJSLocally(response)
+        self.ignore_integrity(response, name='nonce')
