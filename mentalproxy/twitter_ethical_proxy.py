@@ -3,6 +3,7 @@ from mentalproxy.http_tools import HTTPTools
 import re
 from urllib.parse import quote
 from mentalproxy.helpers import remove_cookie_word
+import json
 
 
 class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
@@ -57,6 +58,8 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
     def filter_incoming_request(self):
         print(self.destination_host_from_url, self.destination_url)
         
+        # reducing count
+        
         # Fuck you Elon
         tracking = [
             'promoted_content/log.json',
@@ -77,15 +80,31 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         #     return True
             
         # Fuck you Aza Raskin for inventing infinite scroll
-        if ('HomeTimeline' in self.destination_url or 'HomeLatestTimeline' in self.destination_url)\
-            and not self.rate_limiter.timeline_request_ok():
+        if ('HomeTimeline' in self.destination_url or 'HomeLatestTimeline' in self.destination_url):
             
-        #     # send a 403 with a message
-            self.send_error(403, f"Timeline paused for {int(self.rate_limiter.notifications_remaining_time)} more seconds...")
-            
-        #     # send an empty json (no error, shows as empty)
-        #     # self.send_empty_json()
-            return True
+            if not self.rate_limiter.timeline_request_ok():
+                
+            #     # send a 403 with a message
+                self.send_error(403, f"Timeline paused for {int(self.rate_limiter.notifications_remaining_time)} more seconds...")
+                
+            #     # send an empty json (no error, shows as empty)
+            #     # self.send_empty_json()
+                return True
+            else:
+                # reducing the count
+                self.path = self.path.replace('count%22%3A20%2C%22', 'count%22%3A5%2C%22')
+                
+                
+    def process_uploaded_data(self):
+        if ('HomeTimeline' in self.destination_url or 'HomeLatestTimeline' in self.destination_url):
+            data = self.data
+            data = data.decode('utf-8')
+            data = json.loads(data)
+            if 'count' in data.get('variables', {}):
+                data['variables']['count'] = 5
+            data = json.dumps(data)
+            data = data.encode('utf-8')
+            self.data = data
         
     def get_proxy_headers(self):
         h = super().get_proxy_headers()

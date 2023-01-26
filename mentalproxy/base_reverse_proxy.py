@@ -178,16 +178,21 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
                 
         self.send_proxied_response(response)
     
+    def process_uploaded_data(self):
+        pass
+    
     def process_with_data(self):
         """Process a request assuming there was data"""
         if self.filter_incoming_request():
             return
         post_length = int(self.get_header('content-length'))
+        self.data = self.rfile.read(post_length)
+        self.process_uploaded_data()
         response = requests.request(
             method=self.command,
             url=self.destination_url,
             headers=self.get_proxy_headers(),
-            data=self.rfile.read(post_length)
+            data=self.data
         )
         self.send_proxied_response(response)
         
