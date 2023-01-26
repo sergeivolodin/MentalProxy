@@ -58,6 +58,7 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
     def get_proxy_headers(self):
         """Get the headers to be sent to the destination."""
         headers = {x.lower(): y for x, y in self.headers.items()}
+        self.headers_lowercase = dict(headers)
         headers['host'] = self.destination_host_from_url
         headers['origin'] = self.destination_base_url
         headers['referer'] = self.destination_base_url
