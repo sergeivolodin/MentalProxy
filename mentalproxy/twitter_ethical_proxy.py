@@ -119,4 +119,3 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         self.loadJSLocally(response)
         self.ignore_integrity(response, name='nonce')
         self.proxyAPIRequests(response)
-        print(response.headers)
