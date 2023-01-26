@@ -180,6 +180,8 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
     
     def process_with_data(self):
         """Process a request assuming there was data"""
+        if self.filter_incoming_request():
+            return
         post_length = int(self.get_header('content-length'))
         response = requests.request(
             method=self.command,

@@ -55,21 +55,37 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         return TwitterEthicalProxy
     
     def filter_incoming_request(self):
-        pass
+        print(self.destination_host_from_url, self.destination_url)
+        
+        # Fuck you Elon
+        tracking = [
+            'promoted_content/log.json',
+            'jot/client_event.json',
+            'live_pipeline/events'
+        ]
+        
+        if self.destination_host_from_url == 'api.twitter.com':
+            if any(s in self.destination_url for s in tracking):
+                self.send_error(403, 'Tracking is disabled')
+                return True
+        
+        # pass
         # if 'api/v1/notifications' in self.path and not self.rate_limiter.notifications_request_ok():
         #     self.send_empty_json_array()
 
         #     # self.send_error(403, "Notifications muted for mental wellbeing")
         #     return True
             
-        # if '/api/v1/timelines/' in self.path and not self.rate_limiter.timeline_request_ok():
+        # Fuck you Aza Raskin for inventing infinite scroll
+        if ('HomeTimeline' in self.destination_url or 'HomeLatestTimeline' in self.destination_url)\
+            and not self.rate_limiter.timeline_request_ok():
             
         #     # send a 403 with a message
-        #     self.send_error(403, f"Timeline paused for {int(self.rate_limiter.notifications_remaining_time)} more seconds...")
+            self.send_error(403, f"Timeline paused for {int(self.rate_limiter.notifications_remaining_time)} more seconds...")
             
         #     # send an empty json (no error, shows as empty)
         #     # self.send_empty_json()
-        #     return True
+            return True
         
     def get_proxy_headers(self):
         h = super().get_proxy_headers()
