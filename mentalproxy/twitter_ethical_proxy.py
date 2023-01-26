@@ -79,7 +79,7 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         #     return True
             
         # Fuck you Aza Raskin for inventing infinite scroll
-        if ('HomeTimeline' in self.destination_url or 'HomeLatestTimeline' in self.destination_url):
+        if ('UserTweets' in self.destination_url or 'HomeTimeline' in self.destination_url or 'HomeLatestTimeline' in self.destination_url):
             
             if not self.rate_limiter.timeline_request_ok():
                 
@@ -95,7 +95,7 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
                 
                 
     def process_uploaded_data(self):
-        if ('HomeTimeline' in self.destination_url or 'HomeLatestTimeline' in self.destination_url):
+        if ('UserTweets' in self.destination_url or 'HomeTimeline' in self.destination_url or 'HomeLatestTimeline' in self.destination_url):
             data = self.data
             data = data.decode('utf-8')
             data = json.loads(data)
