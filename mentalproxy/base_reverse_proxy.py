@@ -3,6 +3,7 @@ import requests
 import re
 from urllib.parse import urlparse, unquote
 from urllib.parse import parse_qs
+from mentalproxy.helpers import remove_cookie_word
 
 
 class BaseReverseProxyHandler(BaseHTTPRequestHandler):
@@ -48,9 +49,7 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
     def destination_host_from_url(self):
         url = self.destination_url
         url = urlparse(url)
-        
-        # print(self.destination_url)
-        
+                
         if url.hostname is None:
             return self.destination_host
         else:
@@ -77,8 +76,6 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
         query_params = parse_qs(parsed_url.query)
         
         if '__proxy_url' in query_params:
-            # print('host override', parsed_url.hostname)
-            # self.override_dst_host(parsed_url.hostname)
             target_url = query_params['__proxy_url'][0]
             return target_url
         
@@ -86,13 +83,8 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
             url1 = self.path.split('/')
             prefix = unquote(url1[1][len('__proxy_prefix_'):])
             postfix = '/'.join(url1[2:])
-            # print('path', self.path)
-            # print('base', self.destination_base_url)
-            # print(url1, 'p', prefix, 'p', postfix)
             return prefix + '/' + postfix
-        
-        # print(query_params)
-        
+                
         return url
     
     def send_response(self, code, message=None):
@@ -104,11 +96,21 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
     def delete_response_headers(self):
         return ['content-encoding', 'transfer-encoding', 'connection', 'vary', 'content-security-policy']
     
-    def remove_cookie_security(self, response_headers):
+    def remove_cookie_secure_attribute(self, cookie):
         """Remove the secure parameter from set-cookie headers."""
-        if 'set-cookie' in response_headers:
-            if response_headers['set-cookie'].endswith('; secure'):
-                response_headers['set-cookie'] = response_headers['set-cookie'][:-8]
+        return remove_cookie_word(cookie, 'secure')
+    
+    def process_cookies(self, method, headers):
+        if 'set-cookie' not in headers:
+            return
+        if isinstance(headers['set-cookie'], str):
+            headers['set-cookie'] = method(headers['set-cookie'])
+        if isinstance(headers['set-cookie'], list):
+            for i, item in enumerate(headers['set-cookie']):
+                headers['set-cookie'][i] = method(item)
+    
+    def process_cookies_from_server(self, headers):
+        self.process_cookies(self.remove_cookie_secure_attribute, headers)
     
     def send_proxied_headers(self, response):
         """Post-process and relay the headers from the destination."""
@@ -119,11 +121,17 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
                 del response_headers[item]
                 
         response_headers['content-length'] = len(response.content)
+        if 'set-cookie' in response_headers:
+            response_headers['set-cookie'] = response.raw.headers.getlist('set-cookie')
         
-        self.remove_cookie_security(response_headers)
+        self.process_cookies_from_server(response_headers)
         
         for x, y in response_headers.items():
-            self.send_header(x, y)
+            if isinstance(y, str):
+                self.send_header(x, y)
+            if isinstance(y, list):
+                for ysub in y:
+                    self.send_header(x, ysub)
         self.end_headers()
         
     def ignore_integrity(self, response, name='integrity'):
@@ -167,9 +175,7 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
             url=self.destination_url,
             headers=self.get_proxy_headers()
         )
-        
-        # print(response.status_code, self.command, self.destination_url, self.get_proxy_headers())
-        
+                
         self.send_proxied_response(response)
     
     def process_with_data(self):

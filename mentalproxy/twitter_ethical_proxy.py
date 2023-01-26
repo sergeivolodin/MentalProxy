@@ -2,6 +2,7 @@ from mentalproxy.base_reverse_proxy import BaseReverseProxyHandler
 from mentalproxy.http_tools import HTTPTools
 import re
 from urllib.parse import quote
+from mentalproxy.helpers import remove_cookie_word
 
 
 class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
@@ -26,13 +27,20 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         p.append('cross-origin-embedder-policy')
         return p
     
-    def remove_cookie_security(self, response_headers):
-        """Remove the secure parameter from set-cookie headers."""
-        subs = 'Domain=.twitter.com; Secure; SameSite=None'
-        if 'set-cookie' in response_headers:
-            if response_headers['set-cookie'].endswith(subs):
-                response_headers['set-cookie'] = response_headers['set-cookie'][:-len(subs)]
+    def process_cookies_from_server(self, headers):
+        if 'set-cookie' not in headers:
+            return
+                
+        super().process_cookies_from_server(headers)
+        self.process_cookies(self.remove_cookies_domain_samesite, headers)
     
+    def remove_cookies_domain_samesite(self, cookie):
+        """Remove the samesite/domain parameters from set-cookie headers."""
+        
+        cookie = remove_cookie_word(cookie, 'domain')
+        cookie = cookie.replace('SameSite=None', 'SameSite=Lax')
+        return cookie
+        
     @classmethod
     def with_limit(cls, rlim):
         """Add a rate limiter for all threads."""
@@ -62,6 +70,10 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         #     # send an empty json (no error, shows as empty)
         #     # self.send_empty_json()
         #     return True
+        
+    def get_proxy_headers(self):
+        h = super().get_proxy_headers()
+        return h
     
     def loadJSLocally(self, response):
         mime = response.headers.get('content-type', '')

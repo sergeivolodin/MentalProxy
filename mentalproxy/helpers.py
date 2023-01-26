@@ -31,3 +31,28 @@ def waitOnline(port, host='localhost', schema='http', delay=0.1, timeout=3):
         except requests.exceptions.ConnectionError:
             pass
         sleep(delay)
+        
+        
+def remove_cookie_word(cookies: str, word: str) -> str:    
+    def getkey(cookie):
+        if len(cookie.split('=')) != 2:
+            return None
+        return cookie.split('=')[0]
+    
+    # removing key-values like Domain=...
+    
+    def filter_word(cookie):
+        if cookie.lower() == word.lower():
+            return False
+        if getkey(cookie) and getkey(cookie).lower() == word.lower():
+            return False
+        return True
+    
+    cs = cookies.split(';')
+    cs = [c.split(',') for c in cs]
+    cs = [[x.strip() for x in c] for c in cs]
+    cs = [[x for x in c if filter_word(x)] for c in cs]
+    
+    cs = [', '.join(c) for c in cs if c]
+    cs = '; '.join(cs)
+    return cs
