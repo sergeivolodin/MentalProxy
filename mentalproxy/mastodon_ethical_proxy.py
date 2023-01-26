@@ -29,7 +29,7 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
             # self.send_error(403, "Notifications muted for mental wellbeing")
             return True
             
-        if '/api/v1/timelines/' in self.path and not self.rate_limiter.timeline_request_ok():
+        if (('/api/v1/accounts/' in self.path and 'statuses' in self.path) or '/api/v1/timelines/' in self.path) and not self.rate_limiter.timeline_request_ok():
             
             # send a 403 with a message
             self.send_error(403, f"Timeline paused for {int(self.rate_limiter.notifications_remaining_time)} more seconds...")

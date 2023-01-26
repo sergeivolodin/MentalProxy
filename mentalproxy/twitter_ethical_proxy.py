@@ -26,6 +26,7 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         p = super().delete_response_headers
         p.append('cross-origin-opener-policy')
         p.append('cross-origin-embedder-policy')
+        p.append('access-control-allow-origin')
         return p
     
     def process_cookies_from_server(self, headers):
@@ -56,8 +57,6 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         return TwitterEthicalProxy
     
     def filter_incoming_request(self):
-        print(self.destination_host_from_url, self.destination_url)
-        
         # reducing count
         
         # Fuck you Elon
@@ -129,7 +128,8 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         
         if 'text/html' in mime or 'application/javascript' in mime:
             # response._content = response.content.replace(b'api.twitter.com', b'127.0.0.1:8080')
-            response._content = response.content.replace(b'https://api.twitter.com', b'http://127.0.0.1:8080/__proxy_prefix_https%3A%2F%2Fapi.twitter.com')
+            # todo: https proxy support
+            response._content = response.content.replace(b'https://api.twitter.com', b'http://' + self.headers_lowercase.get('host', '').encode('utf-8') + b'/__proxy_prefix_https%3A%2F%2Fapi.twitter.com')
     
     def process_response(self, response):
         """Process the response from the destination."""
