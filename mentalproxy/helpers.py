@@ -8,6 +8,11 @@ from uuid import uuid4
 
 class WithGlobals(object):
     """Set the attribute for a class"""
+    
+    @classmethod
+    def __setglobals__(cls):
+        pass
+    
     @classmethod
     def setGlobal(cls, **kwargs):
         kwargs = dict(kwargs)
@@ -25,19 +30,20 @@ class WithGlobals(object):
             
         newName = cls.__name__ + '_' + str(uuid4())
         NewClass = type(newName, (cls,), kwargs)
+        NewClass.__setglobals__()
             
         return NewClass
 
 class IDIncreaser():
     """Return increasing ids, thread-safe."""
     def __init__(self):
-        self.id_ = 0
+        self.id_ = 10000
         self.lock = Lock()
         
     def getId(self):
         with self.lock:
             id_ = self.id_
-            self.id_ += 1
+            self.id_ -= 1
         return id_
 
 
