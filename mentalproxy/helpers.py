@@ -2,6 +2,43 @@ import socket
 from contextlib import closing
 import requests
 from time import sleep, time
+from threading import Lock
+from uuid import uuid4
+
+
+class WithGlobals(object):
+    """Set the attribute for a class"""
+    @classmethod
+    def setGlobal(cls, **kwargs):
+        kwargs = dict(kwargs)
+        
+        for key in kwargs.keys():
+            assert isinstance(key, str)
+            assert hasattr(cls, key), (cls, key)
+            
+        assert not hasattr(cls, 'withGlobalsListGlobals')
+        kwargsOrig = dict(kwargs)
+        def withGlobalsListGlobals(cls):
+            return kwargsOrig
+        
+        kwargs['withGlobalsListGlobals'] = classmethod(withGlobalsListGlobals)
+            
+        newName = cls.__name__ + '_' + str(uuid4())
+        NewClass = type(newName, (cls,), kwargs)
+            
+        return NewClass
+
+class IDIncreaser():
+    """Return increasing ids, thread-safe."""
+    def __init__(self):
+        self.id_ = 0
+        self.lock = Lock()
+        
+    def getId(self):
+        with self.lock:
+            id_ = self.id_
+            self.id_ += 1
+        return id_
 
 
 def find_free_port():
