@@ -1,4 +1,5 @@
 from http.server import BaseHTTPRequestHandler
+import json
 
 
 class HTTPTools(BaseHTTPRequestHandler):
@@ -10,10 +11,13 @@ class HTTPTools(BaseHTTPRequestHandler):
             return
         to_replace = ('wss://' + self.destination_host).encode('utf-8')
         response._content = response.content.replace(to_replace, b'wss://0.0.0.0')
-        
+    
+    def send_json(self, data):
+        """Send an empty json response."""
+        self.send_header('content-type', 'application/json; charset=utf-8')
+        self.send_header('content-length', 2)
+        self.wfile.write(json.dumps(data).encode('utf-8'))
 
     def send_empty_json_array(self):
         """Send an empty json response."""
-        self.send_header('content-type', 'application/json')
-        self.send_header('content-length', 2)
-        self.wfile.write(b'[]')
+        self.send_json([])
