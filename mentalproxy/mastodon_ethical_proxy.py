@@ -1,6 +1,7 @@
 from mentalproxy.base_reverse_proxy import BaseReverseProxyHandler
 from mentalproxy.http_tools import HTTPTools
 import json
+from requests import Response
 
 
 class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
@@ -68,8 +69,32 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
             # self.send_empty_json()
             return True
     
+    def disable_scroll_events(self, response: Response):
+        if 'application/javascript' != response.headers.get('content-type'):
+            return
+        
+        data = response.content
+        data = data.replace(b'this.attachScrollListener(),', b'')
+        
+        # disable websocket onclose
+        data = data.replace(b'n.onclose=s,', b'')
+        
+        if data != response.content:
+            print('JS Data Changed!')
+        # else:
+        #     print('JS file', self.path, 'NOT changed')
+            
+            # if b'attachScrollListener()' in response.content:
+            #     # print(response.content)
+            #     with open('a.txt', 'wb') as f:
+            #         f.write(response.content)
+            #     raise ValueError('FOUND')
+        
+        response._content = data
+    
     def process_response(self, response):
         """Process the response from the destination."""
         super(BaseMastodonEthicalProxy, self).process_response(response)
         self.disable_websockets(response)
         self.reduce_toot_count(response)
+        self.disable_scroll_events(response)
