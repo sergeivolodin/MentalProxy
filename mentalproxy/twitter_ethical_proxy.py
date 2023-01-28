@@ -92,6 +92,7 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
             else:
                 # reducing the count
                 self.path = self.path.replace('count%22%3A20%2C%22', 'count%22%3A5%2C%22')
+                self.path = self.path.replace('count%22%3A40%2C%22', 'count%22%3A5%2C%22')
                 
                 
     def process_uploaded_data(self):
