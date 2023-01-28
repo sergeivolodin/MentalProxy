@@ -2,6 +2,8 @@ from mentalproxy.base_reverse_proxy import BaseReverseProxyHandler
 from mentalproxy.http_tools import HTTPTools
 import json
 from requests import Response
+from datetime import timezone, datetime
+import threading
 
 
 class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
@@ -38,6 +40,87 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
     def is_path_notifications(self):
         return 'api/v1/notifications' in self.path
     
+    def insert_pause_toot(self, timeout=60):
+        
+        if not hasattr(self, 'lock_threading'):
+            self.lock_threading = threading.Lock()
+            
+        with self.lock_threading:
+            if not hasattr(self, 'last_toot_id'):
+                self.last_toot_id = 0
+            
+            id_ = self.last_toot_id    
+            
+            self.last_toot_id += 1
+        
+        uri = f"http://{self.proxy_host}"
+        
+        print('Returning ID', id_)
+        
+        return {
+            "id": str(id_),
+            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "in_reply_to_id": None,
+            "in_reply_to_account_id": None,
+            "sensitive": False,
+            "spoiler_text": "",
+            "visibility": "public",
+            "language": "en",
+            "uri": uri,
+            "url": uri,
+            "replies_count": 0,
+            "reblogs_count": 0,
+            "favourites_count": 0,
+            "edited_at": None,
+            "favourited": False,
+            "reblogged": False,
+            "muted": False,
+            "bookmarked": False,
+            "content": f"Timeline paused for {timeout} seconds",
+            "filtered": [],
+            "reblog": None,
+            "account": {
+                "id": "0",
+                "username": "MentalProxy",
+                "acct": "MentalProxy@local.local",
+                "display_name": "Mental Proxy",
+                "locked": False,
+                "bot": True,
+                "discoverable": True,
+                "group": False,
+                "created_at": "2023-01-15T00:00:00.000Z",
+                "note": "Mental wellbeing features for social media websites",
+                "url": "https://mentalproxy.sergia.ch",
+                "avatar": None,
+                "avatar_static": None,
+                "header": None,
+                "header_static": None,
+                "followers_count": 1,
+                "following_count": 1,
+                "statuses_count": 1,
+                "last_status_at": "2023-01-28",
+                "emojis": [],
+                "fields": [
+                    {
+                        "name": "Website/Blog",
+                        "value": "<a href=\"https://mentalproxy.sergia.ch/\" rel=\"nofollow noopener noreferrer\" target=\"_blank\"><span class=\"invisible\">https://www.</span><span class=\"\">mentalproxy.sergia.ch/</span><span class=\"invisible\"></span></a>",
+                        "verified_at": None
+                    }
+                ]
+            },
+            "media_attachments": [],
+            "mentions": [],
+            "tags": [
+                # {
+                #     "name": "morning",
+                #     "url": "https://dair-community.social/tags/morning"
+                # }
+            ],
+            "emojis": [],
+            "card": None,
+            "poll": None
+        }
+    
     def reduce_toot_count(self, response, limit=10):
         if not self.get_is_path_manytoots(profile_maxid_required=False):
             return
@@ -46,6 +129,7 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         data = data.decode('utf-8')
         data = json.loads(data)
         data = data[:limit]
+        data.append(self.insert_pause_toot())
         data = json.dumps(data)
         data = data.encode('utf-8')
         response._content = data
@@ -63,7 +147,9 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         if self.is_path_manytoots and not self.rate_limiter.timeline_request_ok():
             
             # send a 403 with a message
-            self.send_error(403, f"Timeline paused for {int(self.rate_limiter.notifications_remaining_time)} more seconds...")
+            # self.send_error(403, f"Timeline paused for {} more seconds...")
+            timeout = int(self.rate_limiter.notifications_remaining_time)
+            self.send_json([self.insert_pause_toot(timeout)])
             
             # send an empty json (no error, shows as empty)
             # self.send_empty_json()
