@@ -152,7 +152,7 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
         """Send the response from the destination to the client."""
         self.process_response(response)
         self.send_response(response.status_code)
-        self.send_proxied_headers(response)   
+        self.send_proxied_headers(response)
              
         self.wfile.write(response.content)
         
