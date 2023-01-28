@@ -15,7 +15,7 @@ See https://dair-community.social/@sergia/109660753217484908
 - Direct Sharing https://dair-community.social/@sergia/109513867125571339
 
 ### Plan
-1. Check if a Python proxy server can work for Mastodon, as a web interface and on the phone app... Works with the web interface!
+1. Check if a Python proxy server can work for Mastodon, as a web interface and on the phone app... Works with the web interface! Works in an app with https
 2. Check if basic data can be changed... Yes
 3. Implement queued/delayed notifications
 

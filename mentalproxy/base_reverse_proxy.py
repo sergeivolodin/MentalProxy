@@ -40,10 +40,18 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler, WithGlobals):
         else:
             return url.hostname
     
+    
+    delete_proxy_headers = ['x-forwarded-for', 'x-forwarded-proto', 'x-pagekite-port', 'x-old-x-forwarded-for', 'x-forwarded-host', 'fakehttps']
+    
     def get_proxy_headers(self):
         """Get the headers to be sent to the destination."""
         headers = {x.lower(): y for x, y in self.headers.items()}
         self.headers_lowercase = dict(headers)
+        
+        for h in self.delete_proxy_headers:
+            if h in headers:
+                del headers[h]
+        
         headers['host'] = self.destination_host_from_url
         headers['origin'] = self.destination_base_url
         headers['referer'] = self.destination_base_url
@@ -156,7 +164,7 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler, WithGlobals):
         """Process a request assuming there was no data sent."""
         if self.filter_incoming_request():
             return
-        response = requests.request(
+        response = self.handleRequest(
             method=self.command,
             url=self.destination_url,
             headers=self.get_proxy_headers()
@@ -167,6 +175,15 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler, WithGlobals):
     def process_uploaded_data(self):
         pass
     
+    
+    def handleRequest(self, **kwargs):
+        try:
+            resp = requests.request(**kwargs)
+            return resp
+        except requests.exceptions.InvalidSchema as e:
+            resp = requests.request(**kwargs, allow_redirects=False)
+            return resp
+    
     def process_with_data(self):
         """Process a request assuming there was data"""
         if self.filter_incoming_request():
@@ -174,7 +191,7 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler, WithGlobals):
         post_length = int(self.get_header('content-length'))
         self.data = self.rfile.read(post_length)
         self.process_uploaded_data()
-        response = requests.request(
+        response = self.handleRequest(
             method=self.command,
             url=self.destination_url,
             headers=self.get_proxy_headers(),
