@@ -15,9 +15,10 @@ PORT = find_free_port()
 def create_local_proxy(port, run=False):
     server_address = ('', port)
     ratelimiter = RateLimiterPostsNotifications()
-    handler_class = BaseMastodonEthicalProxy\
-        .point_to('https', TEST_INSTANCE)\
-        .with_limit(ratelimiter)
+    handler_class = BaseMastodonEthicalProxy.setGlobal(
+        destination_schema='https',
+        destination_host=TEST_INSTANCE,
+        rate_limiter=ratelimiter)
     httpd = ThreadingHTTPServer(server_address, handler_class)
     if run:
         httpd.serve_forever()

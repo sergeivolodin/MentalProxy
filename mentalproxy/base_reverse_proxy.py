@@ -3,26 +3,11 @@ import requests
 import re
 from urllib.parse import urlparse, unquote
 from urllib.parse import parse_qs
-from mentalproxy.helpers import remove_cookie_word
+from mentalproxy.helpers import remove_cookie_word, WithGlobals
 
 
-class BaseReverseProxyHandler(BaseHTTPRequestHandler):
+class BaseReverseProxyHandler(BaseHTTPRequestHandler, WithGlobals):
     """Reverse Proxy Server class."""
-    
-    @classmethod
-    def point_to(cls, destination_schema, destination_host):
-        """Create a class that has a specific host/port."""
-        
-        class ReverseProxyHandler(cls):
-            @property
-            def destination_schema(self):
-                return destination_schema
-            
-            @property
-            def destination_host(self):
-                return destination_host
-
-        return ReverseProxyHandler
     
     @property
     def destination_schema(self):

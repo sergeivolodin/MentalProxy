@@ -15,9 +15,10 @@ def run(listen_port, destination_host):
     """Run the server."""
     server_address = ('', listen_port)
     ratelimiter = RateLimiterPostsNotifications()
-    handler_class = BaseMastodonEthicalProxy\
-        .point_to(destination_schema, destination_host)\
-        .with_limit(ratelimiter)
+    handler_class = BaseMastodonEthicalProxy.setGlobal(
+        destination_schema=destination_schema,
+        destination_host=destination_host,
+        rate_limiter=ratelimiter)
     httpd = ThreadingHTTPServer(server_address, handler_class)
     httpd.serve_forever()
 

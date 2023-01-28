@@ -13,19 +13,6 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
     def rate_limiter(self):
         raise NotImplemented('Please use with_limit()')
     
-    @classmethod
-    def with_limit(cls, rlim):
-        """Add a rate limiter for all threads."""
-        if rlim is None:
-            raise ValueError("Please supply a ratelimiter")
-        
-        class MastodonEthicalProxy(cls):
-            @property
-            def rate_limiter(self):
-                return rlim
-        
-        return MastodonEthicalProxy
-    
     def get_is_path_manytoots(self, profile_maxid_required=True):
         c1 = '/api/v1/accounts/' in self.path and 'statuses' in self.path
         if profile_maxid_required:

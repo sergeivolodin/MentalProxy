@@ -11,8 +11,7 @@ def run(listen_port):
     """Run the server."""
     server_address = ('', listen_port)
     ratelimiter = RateLimiterPostsNotifications()
-    handler_class = BaseTwitterEthicalProxy\
-        .with_limit(ratelimiter)
+    handler_class = BaseTwitterEthicalProxy.setGlobal(rate_limiter=ratelimiter)
     httpd = ThreadingHTTPServer(server_address, handler_class)
     httpd.serve_forever()
 

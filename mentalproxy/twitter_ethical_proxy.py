@@ -42,19 +42,6 @@ class BaseTwitterEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         cookie = remove_cookie_word(cookie, 'domain')
         cookie = cookie.replace('SameSite=None', 'SameSite=Lax')
         return cookie
-        
-    @classmethod
-    def with_limit(cls, rlim):
-        """Add a rate limiter for all threads."""
-        if rlim is None:
-            raise ValueError("Please supply a ratelimiter")
-        
-        class TwitterEthicalProxy(cls):
-            @property
-            def rate_limiter(self):
-                return rlim
-        
-        return TwitterEthicalProxy
     
     def filter_incoming_request(self):
         # reducing count
