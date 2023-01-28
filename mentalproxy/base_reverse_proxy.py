@@ -202,6 +202,11 @@ class BaseReverseProxyHandler(BaseHTTPRequestHandler):
             self.process_with_data()
         else:
             self.process_no_data()
+        
+    @property
+    def proxy_host(self):
+        self.get_proxy_headers()
+        return self.headers_lowercase.get('host', '')
             
     def do_GET(self):
         self.process()
