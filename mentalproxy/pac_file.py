@@ -63,3 +63,14 @@ class DirectWithExceptionsPACWriter(PACWriter):
         s += DirectPACWriter.returnDirect()
         return s
     
+
+if __name__ == '__main__':
+    fn = 'test_proxy'
+    #proxy_address = 'proxy.mentalproxy.sergia.ch'
+    proxy_address = 'dev.walrus-liberty.ts.net'
+    proxy_port = '8443'
+    hostmap = ['dair-community.social', 'twitter.com']
+    data = DirectWithExceptionsPACWriter(proxy=f'{proxy_address}:{proxy_port}', exceptions=hostmap).body()
+    fn += '.' + DirectWithExceptionsPACWriter.download_metadata()['extension']
+    with open('www/' + fn, 'w') as f:
+        f.write(data)
