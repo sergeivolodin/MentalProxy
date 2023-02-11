@@ -224,3 +224,4 @@ Will work with the apps as well if it's just a link!
 - glitchy login on Mastodon
 - preferences require login on Mastodon for some reason
 - 2FA doesn't work on Mastodon
+- media uploads don't work on Twitter (bad cors or something) and on Mastodon
