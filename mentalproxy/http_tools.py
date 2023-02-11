@@ -14,9 +14,14 @@ class HTTPTools(BaseHTTPRequestHandler):
     
     def send_json(self, data):
         """Send an empty json response."""
+        s = json.dumps(data).encode('utf-8')
+        self.send_response(200, 'OK')
         self.send_header('content-type', 'application/json; charset=utf-8')
-        self.send_header('content-length', 2)
-        self.wfile.write(json.dumps(data).encode('utf-8'))
+        self.send_header('content-length', len(s))
+        self.send_header('Server', self.version_string())
+        self.send_header('Date', self.date_time_string())
+        self.end_headers()
+        self.wfile.write(s)
 
     def send_empty_json_array(self):
         """Send an empty json response."""

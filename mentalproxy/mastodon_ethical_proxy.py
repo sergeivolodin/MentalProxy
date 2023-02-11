@@ -2,12 +2,17 @@ from mentalproxy.base_reverse_proxy import BaseReverseProxyHandler
 from mentalproxy.http_tools import HTTPTools
 import json
 from requests import Response
-from datetime import timezone, datetime
+from datetime import timezone, datetime, timedelta
 import threading
 
+from mentalproxy.helpers import IDIncreaser
 
 class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
     """Ethical proxy."""
+
+    @classmethod
+    def __setglobals__(cls):
+        cls.toot_id = IDIncreaser()
     
     @property
     def rate_limiter(self):
@@ -27,18 +32,15 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
     def is_path_notifications(self):
         return 'api/v1/notifications' in self.path
     
-    def insert_pause_toot(self, timeout=60):
-        
-        if not hasattr(self, 'lock_threading'):
-            self.lock_threading = threading.Lock()
-            
-        with self.lock_threading:
-            if not hasattr(self, 'last_toot_id'):
-                self.last_toot_id = 0
-            
-            id_ = self.last_toot_id    
-            
-            self.last_toot_id += 1
+
+    def insert_pause_toot(self, timeout=60, empty=False,):                    
+        uri = f"http://{self.proxy_host}"
+        intid = self.toot_id.getId()
+        id_ = 'mentalproxy_' + str(intid)
+        print('Returning ID', id_)
+        createdAt = '2000-01-15T00:00:00.000Z'
+        dt: datetime = datetime(year=2023, month=1, day=1, hour=0, minute=0, second=0) + timedelta(minutes=intid)
+        # ts = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         
         uri = f"http://{self.proxy_host}"
         
@@ -46,7 +48,7 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         
         return {
             "id": str(id_),
-            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "created_at": dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
             "in_reply_to_id": None,
             "in_reply_to_account_id": None,
             "sensitive": False,
@@ -63,14 +65,14 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
             "reblogged": False,
             "muted": False,
             "bookmarked": False,
-            "content": f"Timeline paused for {timeout} seconds",
+            "content": "" if empty else f"Timeline paused for {timeout} seconds",
             "filtered": [],
             "reblog": None,
             "account": {
                 "id": "0",
-                "username": "MentalProxy",
-                "acct": "MentalProxy@local.local",
-                "display_name": "Mental Proxy",
+                "username": "" if empty else "MentalProxy",
+                "acct": "" if empty else "MentalProxy@local.local",
+                "display_name": "" if empty else "Mental Proxy",
                 "locked": False,
                 "bot": True,
                 "discoverable": True,
@@ -108,7 +110,8 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
             "poll": None
         }
     
-    def reduce_toot_count(self, response, limit=10):
+    # works with as little as 1
+    def reduce_toot_count(self, response, limit=1):
         if not self.get_is_path_manytoots(profile_maxid_required=False):
             return
         assert isinstance(limit, int), limit
@@ -130,7 +133,11 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
 
             # self.send_error(403, "Notifications muted for mental wellbeing")
             return True
+
             
+        # this breaks "Load More" for some reason..
+        # need a header
+        # link <https://dair-community.social/api/v1/timelines/home?max_id=109768009707023563>; rel="next", <https://dair-community.social/api/v1/timelines/home?min_id=109768052510374870>; rel="prev"
         if self.is_path_manytoots and not self.rate_limiter.timeline_request_ok():
             
             # send a 403 with a message
