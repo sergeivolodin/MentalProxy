@@ -116,7 +116,7 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         data = data.decode('utf-8')
         data = json.loads(data)
         data = data[:limit]
-        data.append(self.insert_pause_toot())
+        #data.append(self.insert_pause_toot())
         data = json.dumps(data)
         data = data.encode('utf-8')
         response._content = data
@@ -134,9 +134,9 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         if self.is_path_manytoots and not self.rate_limiter.timeline_request_ok():
             
             # send a 403 with a message
-            # self.send_error(403, f"Timeline paused for {} more seconds...")
             timeout = int(self.rate_limiter.notifications_remaining_time)
-            self.send_json([self.insert_pause_toot(timeout)])
+            self.send_error(403, f"Timeline paused for {timeout} more seconds...")
+            #self.send_json([self.insert_pause_toot(timeout)])
             
             # send an empty json (no error, shows as empty)
             # self.send_empty_json()
