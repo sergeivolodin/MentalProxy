@@ -8,7 +8,6 @@ from uuid import uuid4
 
 class WithGlobals(object):
     """Set the attribute for a class"""
-
     @classmethod
     def __setglobals__(cls):
         pass

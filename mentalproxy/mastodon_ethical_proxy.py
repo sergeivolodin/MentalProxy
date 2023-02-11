@@ -1,5 +1,6 @@
 from mentalproxy.base_reverse_proxy import BaseReverseProxyHandler
 from mentalproxy.http_tools import HTTPTools
+from mentalproxy.helpers import IDIncreaser
 import json
 from requests import Response
 from datetime import timezone, datetime, timedelta
@@ -10,10 +11,6 @@ from mentalproxy.helpers import IDIncreaser
 class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
     """Ethical proxy."""
 
-    @classmethod
-    def __setglobals__(cls):
-        cls.toot_id = IDIncreaser()
-    
     @property
     def rate_limiter(self):
         raise NotImplemented('Please use with_limit()')
@@ -32,7 +29,6 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
     def is_path_notifications(self):
         return 'api/v1/notifications' in self.path
     
-
     def insert_pause_toot(self, timeout=60, empty=False,):                    
         uri = f"http://{self.proxy_host}"
         intid = self.toot_id.getId()
@@ -42,9 +38,24 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         dt: datetime = datetime(year=2023, month=1, day=1, hour=0, minute=0, second=0) + timedelta(minutes=intid)
         # ts = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         
+    @classmethod
+    def __setglobals__(cls):
+        cls.toot_id = IDIncreaser()
+    
+    def insert_pause_toot(self, timeout=60, empty=False,):                    
         uri = f"http://{self.proxy_host}"
+        intid = self.toot_id.getId()
+        id_ = 'mentalproxy_' + str(intid)
         
         print('Returning ID', id_)
+        
+        
+        createdAt = '2000-01-15T00:00:00.000Z'
+        
+        dt: datetime = datetime(year=2023, month=1, day=1, hour=0, minute=0, second=0) + timedelta(minutes=intid)
+        # dt.
+        
+        # ts = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         
         return {
             "id": str(id_),
@@ -55,8 +66,8 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
             "spoiler_text": "",
             "visibility": "public",
             "language": "en",
-            "uri": uri,
-            "url": uri,
+            "uri": "https://octodon.social/users/siege/statuses/10976792997866245", #uri,
+            "url": "https://octodon.social/@siege/109767929978662458", #uri,
             "replies_count": 0,
             "reblogs_count": 0,
             "favourites_count": 0,
@@ -118,11 +129,13 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
         data = response.content
         data = data.decode('utf-8')
         data = json.loads(data)
+        # data = [self.insert_pause_toot()] + data[:limit]
         data = data[:limit]
         #data.append(self.insert_pause_toot())
         data = json.dumps(data)
         data = data.encode('utf-8')
         response._content = data
+        response.
         
         print(self.path, 'reduced toot count')
         
@@ -134,7 +147,6 @@ class BaseMastodonEthicalProxy(BaseReverseProxyHandler, HTTPTools):
             # self.send_error(403, "Notifications muted for mental wellbeing")
             return True
 
-            
         # this breaks "Load More" for some reason..
         # need a header
         # link <https://dair-community.social/api/v1/timelines/home?max_id=109768009707023563>; rel="next", <https://dair-community.social/api/v1/timelines/home?min_id=109768052510374870>; rel="prev"
