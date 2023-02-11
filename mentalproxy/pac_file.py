@@ -13,9 +13,11 @@ class PACWriter:
         raise NotImplementedError
     
     def generate(self):
-        s = "function FindProxyForURL(url, host)\n{\n"
-        s += self.body()
-        s += "\n}"
+        def indent(text, count=2):
+            return '\n'.join([' ' * count + x for x in text.split('\n')])
+        s = "function FindProxyForURL(url, host) {\n"
+        s += indent(self.body())
+        s += "\n}\n"
         return s
     
     @classmethod
@@ -49,10 +51,12 @@ class DirectWithExceptionsPACWriter(PACWriter):
         self.exceptions = exceptions
         
     def exceptionStatement(self, host, proxy):
-        s = f'if (dnsDomainIs(host, "{host}"))'
-        s += '\n{\n'
-        s += f'  return "PROXY {proxy}";'
-        s += '\n}'
+        if host[0].isalpha():
+            s  = f'if (dnsDomainIs(host, "{host}") || shExpMatch(url, "*{host}*"))' + '\n'
+        else:
+            s  = f'if (shExpMatch(host, "{host}") || shExpMatch(url, "{host}"))' + '\n'
+        s += f'  return "PROXY {proxy}";\n'
+        #s +=  ''
         return s
         
     def body(self):
@@ -67,10 +71,11 @@ class DirectWithExceptionsPACWriter(PACWriter):
 if __name__ == '__main__':
     fn = 'test_proxy'
     #proxy_address = 'proxy.mentalproxy.sergia.ch'
-    proxy_address = 'dev.walrus-liberty.ts.net'
-    proxy_port = '8443'
-    hostmap = ['dair-community.social', 'twitter.com']
-    data = DirectWithExceptionsPACWriter(proxy=f'{proxy_address}:{proxy_port}', exceptions=hostmap).body()
+    proxy_address = '95.179.214.45' #'dev.walrus-liberty.ts.net'
+    proxy_port = '8080'
+    hostmap = ['dair-community.social', 'twitter.com', 'mobile.twitter.com', 'api.twitter.com', '178.33.220.142', '104.244.4*', '69.195.1*', ]
+    hostmap = sorted(set(hostmap))
+    data = DirectWithExceptionsPACWriter(proxy=f'{proxy_address}:{proxy_port}', exceptions=hostmap).generate()
     fn += '.' + DirectWithExceptionsPACWriter.download_metadata()['extension']
     with open('www/' + fn, 'w') as f:
         f.write(data)
